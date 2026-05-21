@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mochi AI — にゃ？</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Zen+Maru+Gothic:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf6ee;
+    --warm-white: #fff9f4;
+    --blush: #f7c5c5;
+    --blush-dark: #e8a0a0;
+    --blush-light: #fde8e8;
+    --caramel: #e8c49a;
+    --caramel-dark: #c9945e;
+    --sage: #b8d4b8;
+    --lavender: #d4c4e8;
+    --charcoal: #3a3038;
+    --soft-gray: #8a7e8a;
+    --shadow: rgba(58,48,56,0.12);
+    --shadow-deep: rgba(58,48,56,0.22);
+    --user-bubble: linear-gradient(135deg, #e8a0a0 0%, #d484a0 100%);
+    --mochi-bubble: #fff9f4;
+    --accent-glow: #f7c5c5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', 'Zen Maru Gothic', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Atmospheric BG ── */
+  .bg-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bg-gradient {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 30%, rgba(247,197,197,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 20% 80%, rgba(232,196,154,0.25) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(212,196,232,0.15) 0%, transparent 70%),
+      linear-gradient(160deg, #fdf2e9 0%, #fdf6ee 40%, #fef0f0 100%);
+  }
+  .dust-mote {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(247,197,197,0.6);
+    animation: float-dust linear infinite;
+    pointer-events: none;
+  }
+  @keyframes float-dust {
+    0%   { transform: translateY(100vh) translateX(0) scale(1); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.8; }
+    100% { transform: translateY(-10vh) translateX(var(--drift)) scale(0.5); opacity: 0; }
+  }
+  .sunbeam {
+    position: absolute;
+    top: -20%;
+    right: 5%;
+    width: 220px;
+    height: 140vh;
+    background: linear-gradient(180deg, rgba(255,220,160,0.18) 0%, rgba(255,200,130,0.06) 60%, transparent 100%);
+    transform: rotate(-12deg);
+    transform-origin: top center;
+    animation: beam-sway 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .sunbeam2 {
+    position: absolute;
+    top: -20%;
+    right: 18%;
+    width: 80px;
+    height: 130vh;
+    background: linear-gradient(180deg, rgba(255,220,160,0.10) 0%, transparent 70%);
+    transform: rotate(-8deg);
+    transform-origin: top center;
+    animation: beam-sway 11s ease-in-out infinite reverse;
+    pointer-events: none;
+  }
+  @keyframes beam-sway {
+    0%,100% { transform: rotate(-12deg) scaleX(1); }
+    50%      { transform: rotate(-8deg) scaleX(1.15); }
+  }
+  .pillow-deco {
+    position: absolute;
+    bottom: -30px;
+    right: -40px;
+    width: 280px;
+    height: 180px;
+    background: radial-gradient(ellipse, rgba(247,197,197,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* ── Layout ── */
+  .app-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: 100vh;
+    max-width: 1100px;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 24px;
+    gap: 0;
+    position: relative;
+  }
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 15%; bottom: 15%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(247,197,197,0.5) 30%, rgba(232,196,154,0.4) 70%, transparent);
+  }
+
+  /* Character illustration area */
+  .char-stage {
+    position: relative;
+    width: 220px;
+    height: 260px;
+    margin-bottom: 16px;
+  }
+  .char-svg-wrap {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 8px 24px rgba(232,160,160,0.35));
+    animation: char-idle 5s ease-in-out infinite;
+  }
+  @keyframes char-idle {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    30%      { transform: translateY(-5px) rotate(-0.5deg); }
+    60%      { transform: translateY(-3px) rotate(0.3deg); }
+  }
+  .tail-anim {
+    transform-origin: 50% 100%;
+    animation: tail-swish 3s ease-in-out infinite;
+  }
+  @keyframes tail-swish {
+    0%,100% { transform: rotate(0deg); }
+    40%      { transform: rotate(12deg); }
+    70%      { transform: rotate(-8deg); }
+  }
+  .ear-twitch {
+    transform-origin: 50% 100%;
+    animation: ear-twitch 7s ease-in-out infinite;
+  }
+  @keyframes ear-twitch {
+    0%,85%,100% { transform: rotate(0deg); }
+    88%          { transform: rotate(-8deg); }
+    92%          { transform: rotate(4deg); }
+    96%          { transform: rotate(-5deg); }
+  }
+  .blink-eyes {
+    animation: blink 4s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes blink {
+    0%,45%,55%,100% { transform: scaleY(1); }
+    50%              { transform: scaleY(0.08); }
+  }
+
+  /* Mood bubble */
+  .mood-bubble {
+    position: absolute;
+    top: 8px;
+    right: -8px;
+    background: var(--warm-white);
+    border: 1.5px solid var(--blush);
+    border-radius: 50px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--blush-dark);
+    box-shadow: 0 2px 10px var(--shadow);
+    white-space: nowrap;
+    transition: all 0.4s ease;
+    pointer-events: none;
+  }
+  .mood-bubble::before {
+    content: '';
+    position: absolute;
+    left: -6px; top: 50%;
+    transform: translateY(-50%);
+    border: 5px solid transparent;
+    border-right-color: var(--blush);
+  }
+
+  /* Name tag */
+  .char-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--charcoal);
+    letter-spacing: -0.5px;
+    font-family: 'Zen Maru Gothic', sans-serif;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .char-name span { color: var(--blush-dark); }
+  .char-subtitle {
+    font-size: 11.5px;
+    color: var(--soft-gray);
+    text-align: center;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* Status pills */
+  .status-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .pill-online {
+    background: rgba(184,212,184,0.3);
+    color: #5a8a5a;
+    border: 1px solid rgba(184,212,184,0.6);
+  }
+  .pill-mood {
+    background: rgba(247,197,197,0.3);
+    color: var(--blush-dark);
+    border: 1px solid rgba(247,197,197,0.6);
+  }
+  .pill-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #6aab6a;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.7); }
+  }
+
+  /* Quick reactions */
+  .quick-react {
+    width: 100%;
+    background: var(--warm-white);
+    border: 1.5px solid rgba(247,197,197,0.4);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .quick-react-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--soft-gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .react-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .react-btn {
+    background: var(--cream);
+    border: 1.5px solid rgba(247,197,197,0.35);
+    border-radius: 10px;
+    padding: 8px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--charcoal);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .react-btn:hover {
+    background: var(--blush-light);
+    border-color: var(--blush);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px var(--shadow);
+  }
+  .react-btn .react-emoji { font-size: 16px; display: block; margin-bottom: 2px; }
+
+  /* Stats */
+  .char-stats {
+    width: 100%;
+    background: var(--warm-white);
+    border: 1.5px solid rgba(247,197,197,0.4);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .stat-row:last-child { margin-bottom: 0; }
+  .stat-label { font-size: 11px; color: var(--soft-gray); font-weight: 600; }
+  .stat-bar-wrap { flex: 1; margin: 0 10px; height: 5px; background: rgba(247,197,197,0.2); border-radius: 10px; overflow: hidden; }
+  .stat-bar { height: 100%; border-radius: 10px; transition: width 0.8s ease; }
+  .stat-val { font-size: 11px; font-weight: 700; color: var(--charcoal); min-width: 24px; text-align: right; }
+
+  /* ── Main Chat ── */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 20px 28px;
+    overflow: hidden;
+  }
+
+  /* Chat header */
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(247,197,197,0.3);
+  }
+  .chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blush), var(--caramel));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 2px 10px var(--shadow);
+    flex-shrink: 0;
+  }
+  .header-info h3 {
+    font-size: 15px; font-weight: 800;
+    color: var(--charcoal);
+    font-family: 'Zen Maru Gothic', sans-serif;
+  }
+  .header-info p {
+    font-size: 11px; color: var(--soft-gray); font-weight: 500;
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .header-btn {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(247,197,197,0.35);
+    background: var(--warm-white);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    color: var(--soft-gray);
+  }
+  .header-btn:hover { background: var(--blush-light); border-color: var(--blush); color: var(--blush-dark); }
+
+  /* Messages */
+  .messages-wrap {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+  }
+  .messages-wrap::-webkit-scrollbar { width: 4px; }
+  .messages-wrap::-webkit-scrollbar-track { background: transparent; }
+  .messages-wrap::-webkit-scrollbar-thumb { background: rgba(247,197,197,0.4); border-radius: 4px; }
+
+  /* Date divider */
+  .date-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--soft-gray);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 4px 0;
+  }
+  .date-divider::before, .date-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(247,197,197,0.4), transparent);
+  }
+
+  /* Message rows */
+  .msg-row {
+    display: flex;
+    gap: 10px;
+    animation: msg-in 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.96); }
+    to   { opacity: 1; transform: none; }
+  }
+  .msg-row.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    align-self: flex-end;
+    box-shadow: 0 2px 8px var(--shadow);
+  }
+  .msg-avatar.mochi {
+    background: linear-gradient(135deg, var(--blush) 0%, var(--caramel) 100%);
+  }
+  .msg-avatar.user-av {
+    background: linear-gradient(135deg, #d484a0 0%, #9b69b0 100%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .msg-content { max-width: 72%; display: flex; flex-direction: column; gap: 3px; }
+  .msg-row.user .msg-content { align-items: flex-end; }
+
+  .msg-name {
+    font-size: 10.5px; font-weight: 700;
+    color: var(--soft-gray);
+    letter-spacing: 0.5px;
+    padding: 0 4px;
+  }
+
+  .bubble {
+    padding: 11px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.65;
+    font-weight: 500;
+    position: relative;
+    transition: box-shadow 0.2s;
+    word-break: break-word;
+  }
+  .bubble:hover { box-shadow: 0 4px 16px var(--shadow); }
+
+  .bubble.mochi {
+    background: var(--mochi-bubble);
+    border: 1.5px solid rgba(247,197,197,0.35);
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 10px var(--shadow);
+    color: var(--charcoal);
+  }
+  .bubble.user {
+    background: var(--user-bubble);
+    border-bottom-right-radius: 5px;
+    box-shadow: 0 3px 12px rgba(212,132,160,0.35);
+    color: #fff;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: rgba(138,126,138,0.65);
+    padding: 0 4px;
+    font-weight: 600;
+  }
+
+  /* Typing indicator */
+  .typing-indicator {
+    display: none;
+    gap: 10px;
+    animation: msg-in 0.3s ease both;
+  }
+  .typing-indicator.active { display: flex; }
+  .typing-dots {
+    background: var(--mochi-bubble);
+    border: 1.5px solid rgba(247,197,197,0.35);
+    border-radius: 18px;
+    border-bottom-left-radius: 5px;
+    padding: 12px 18px;
+    display: flex; gap: 5px; align-items: center;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .typing-dots span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--blush-dark);
+    display: block;
+    animation: typing-bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing-bounce {
+    0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+    30%          { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* Input area */
+  .input-area {
+    margin-top: 14px;
+    position: relative;
+  }
+  .input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    background: var(--warm-white);
+    border: 1.5px solid rgba(247,197,197,0.45);
+    border-radius: 20px;
+    padding: 10px 10px 10px 18px;
+    box-shadow: 0 2px 16px var(--shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-box:focus-within {
+    border-color: var(--blush-dark);
+    box-shadow: 0 4px 22px rgba(232,160,160,0.25);
+  }
+  .chat-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: var(--charcoal);
+    resize: none;
+    outline: none;
+    max-height: 120px;
+    min-height: 24px;
+    line-height: 1.5;
+    padding: 2px 0;
+  }
+  .chat-input::placeholder { color: rgba(138,126,138,0.55); }
+
+  .input-actions { display: flex; gap: 6px; align-items: center; }
+  .input-btn {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(247,197,197,0.35);
+    background: transparent;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    color: var(--soft-gray);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .input-btn:hover { background: var(--blush-light); color: var(--blush-dark); border-color: var(--blush); }
+
+  .send-btn {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--blush-dark) 0%, #c06080 100%);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(200,96,128,0.4);
+    flex-shrink: 0;
+  }
+  .send-btn:hover { transform: scale(1.08); box-shadow: 0 5px 18px rgba(200,96,128,0.55); }
+  .send-btn:active { transform: scale(0.96); }
+
+  .hint-text {
+    font-size: 10.5px;
+    color: rgba(138,126,138,0.5);
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 600;
+  }
+
+  /* Emoji panel */
+  .emoji-panel {
+    position: absolute;
+    bottom: 70px;
+    left: 0; right: 0;
+    background: var(--warm-white);
+    border: 1.5px solid rgba(247,197,197,0.4);
+    border-radius: 16px;
+    padding: 12px;
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    box-shadow: 0 -4px 20px var(--shadow);
+    z-index: 10;
+  }
+  .emoji-panel.open { display: flex; }
+  .emoji-item {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: all 0.15s;
+  }
+  .emoji-item:hover { background: var(--blush-light); transform: scale(1.2); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--charcoal);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    .app-wrapper { max-width: 100%; }
+    .chat-area { padding: 14px; }
+  }
+
+  /* Scroll shadow */
+  .scroll-fade {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .scroll-fade::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 32px;
+    background: linear-gradient(transparent, var(--cream));
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* highlight code in messages */
+  .bubble code {
+    background: rgba(247,197,197,0.25);
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    font-family: monospace;
+  }
+  .bubble.user code {
+    background: rgba(255,255,255,0.25);
+  }
+</style>
+</head>
+<body>
+
+<!-- Atmospheric bg -->
+<div class="bg-scene">
+  <div class="bg-gradient"></div>
+  <div class="sunbeam"></div>
+  <div class="sunbeam2"></div>
+  <div class="pillow-deco"></div>
+</div>
+
+<div class="app-wrapper">
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="char-stage">
+      <!-- Mochi SVG Illustration -->
+      <svg class="char-svg-wrap" viewBox="0 0 220 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Shadow -->
+        <ellipse cx="110" cy="252" rx="55" ry="7" fill="rgba(58,48,56,0.08)"/>
+
+        <!-- Body / Hoodie (cream + blush) -->
+        <!-- Big pillow cluster behind -->
+        <ellipse cx="60" cy="195" rx="58" ry="40" fill="#f0ddd4" opacity="0.7"/>
+        <ellipse cx="155" cy="200" rx="52" ry="36" fill="#e8d4e0" opacity="0.6"/>
+        <ellipse cx="108" cy="215" rx="70" ry="38" fill="#f5e8e0" opacity="0.8"/>
+
+        <!-- Hoodie body -->
+        <path d="M68 138 C58 148 50 170 54 205 C58 218 80 228 110 228 C140 228 162 218 166 205 C170 170 162 148 152 138 Z" fill="#d4c4e0"/>
+        <!-- Hoodie pocket -->
+        <rect x="89" y="188" width="42" height="26" rx="10" fill="#c4b4d4" opacity="0.7"/>
+        <!-- Pocket line -->
+        <line x1="110" y1="190" x2="110" y2="212" stroke="#b0a0c8" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+        <!-- Hoodie front flap -->
+        <path d="M95 138 C95 148 105 158 110 162 C115 158 125 148 125 138" stroke="#b0a0c8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+
+        <!-- Arms -->
+        <!-- Left arm (reaching with cup) -->
+        <path d="M68 150 C52 155 40 162 36 175 C34 182 42 188 50 185 C58 182 60 172 68 168" fill="#e8d8f0" stroke="#c4b0d8" stroke-width="1.2"/>
+        <!-- Cup in left hand -->
+        <rect x="22" y="172" width="20" height="22" rx="5" fill="#fff9f4" stroke="#e8c49a" stroke-width="1.5"/>
+        <path d="M30 172 C28 166 32 163 36 165" stroke="#e8c49a" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <!-- Steam from cup -->
+        <path d="M27 170 C26 165 28 162 27 158" stroke="#e8c49a" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.6">
+          <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite"/>
+        </path>
+        <path d="M33 170 C32 165 34 161 33 157" stroke="#e8c49a" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5">
+          <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2.3s" repeatCount="indefinite"/>
+        </path>
+        <!-- Tea surface -->
+        <ellipse cx="32" cy="172" rx="8" ry="2.5" fill="#e8c49a" opacity="0.6"/>
+
+        <!-- Right arm (resting on pillow) -->
+        <path d="M152 150 C168 158 178 165 180 178 C182 188 172 192 165 188 C158 184 155 175 152 168" fill="#e8d8f0" stroke="#c4b0d8" stroke-width="1.2"/>
+
+        <!-- TAIL (animated) -->
+        <g class="tail-anim">
+          <path d="M160 210 C175 200 190 190 195 175 C200 160 195 148 185 145 C178 143 175 148 178 155 C181 162 185 172 178 182 C171 192 158 198 152 205" fill="none" stroke="#e8d0e8" stroke-width="12" stroke-linecap="round"/>
+          <!-- Tail tip fluff -->
+          <ellipse cx="186" cy="143" rx="12" ry="9" fill="#f5e8f5" transform="rotate(-20 186 143)"/>
+          <!-- Tail stripes subtle -->
+          <path d="M160 210 C175 200 190 190 195 175" stroke="rgba(180,150,190,0.3)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- Socks visible at bottom -->
+        <ellipse cx="88" cy="230" rx="18" ry="8" fill="#f7c5c5" opacity="0.8"/>
+        <ellipse cx="132" cy="232" rx="18" ry="8" fill="#f7c5c5" opacity="0.8"/>
+        <!-- sock toe detail -->
+        <ellipse cx="75" cy="235" rx="9" ry="5" fill="#f5b8b8"/>
+        <ellipse cx="147" cy="237" rx="9" ry="5" fill="#f5b8b8"/>
+
+        <!-- Neck -->
+        <rect x="100" y="118" width="20" height="25" rx="8" fill="#f2d8d0"/>
+
+        <!-- HEAD -->
+        <ellipse cx="110" cy="100" rx="48" ry="44" fill="#fce8dc"/>
+        <!-- Cheek blush -->
+        <ellipse cx="82" cy="108" rx="12" ry="7" fill="#f7c5c5" opacity="0.55"/>
+        <ellipse cx="138" cy="108" rx="12" ry="7" fill="#f7c5c5" opacity="0.55"/>
+
+        <!-- EARS (cat) -->
+        <g class="ear-twitch">
+          <!-- Left ear outer -->
+          <path d="M72 64 C62 45 68 30 78 35 C85 38 88 54 86 64" fill="#f0d0c0"/>
+          <!-- Left ear inner -->
+          <path d="M74 62 C67 48 71 37 78 40 C83 43 85 55 84 62" fill="#f7c5c5" opacity="0.8"/>
+        </g>
+        <!-- Right ear (separate for offset) -->
+        <path d="M148 64 C158 45 152 30 142 35 C135 38 132 54 134 64" fill="#f0d0c0"/>
+        <path d="M146 62 C153 48 149 37 142 40 C137 43 135 55 136 62" fill="#f7c5c5" opacity="0.8"/>
+
+        <!-- Hair -->
+        <path d="M65 95 C60 75 65 55 78 50 C88 46 95 56 95 68" fill="#8a6878" opacity="0.9"/>
+        <path d="M155 95 C160 75 155 55 142 50 C132 46 125 56 125 68" fill="#8a6878" opacity="0.9"/>
+        <ellipse cx="110" cy="62" rx="44" ry="18" fill="#8a6878" opacity="0.9"/>
+        <!-- Hair bangs -->
+        <path d="M72 80 C78 68 90 64 100 72" fill="#9a7888"/>
+        <path d="M148 80 C142 68 130 64 120 72" fill="#9a7888"/>
+        <path d="M92 65 C98 60 115 59 125 66 C118 72 102 73 92 65" fill="#9a7888" opacity="0.6"/>
+
+        <!-- EYES -->
+        <!-- Eye whites -->
+        <ellipse cx="92" cy="100" rx="14" ry="12" fill="#fff9f4"/>
+        <ellipse cx="128" cy="100" rx="14" ry="12" fill="#fff9f4"/>
+
+        <!-- Irises -->
+        <g class="blink-eyes">
+          <ellipse cx="92" cy="101" rx="10" ry="10" fill="#6a5080"/>
+          <ellipse cx="128" cy="101" rx="10" ry="10" fill="#6a5080"/>
+          <!-- Pupils -->
+          <ellipse cx="93" cy="102" rx="5.5" ry="6" fill="#2a1a30"/>
+          <ellipse cx="129" cy="102" rx="5.5" ry="6" fill="#2a1a30"/>
+          <!-- Eye shine -->
+          <circle cx="96" cy="97" r="2.5" fill="#fff9f4"/>
+          <circle cx="132" cy="97" r="2.5" fill="#fff9f4"/>
+          <circle cx="88" cy="104" r="1" fill="rgba(255,255,255,0.5)"/>
+          <circle cx="124" cy="104" r="1" fill="rgba(255,255,255,0.5)"/>
+        </g>
+
+        <!-- Tsundere expression: slight pout / half-lidded -->
+        <!-- Upper lids (heavy / sleepy) -->
+        <path d="M80 94 C85 90 100 90 104 94" stroke="#8a6878" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M116 94 C120 90 135 90 140 94" stroke="#8a6878" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Lower lashes subtle -->
+        <path d="M82 107 C87 111 98 112 103 109" stroke="#8a6878" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <path d="M117 109 C122 112 133 111 138 107" stroke="#8a6878" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+        <!-- Eyebrows (slight frown = tsundere) -->
+        <path d="M80 88 C86 84 99 85 103 88" stroke="#7a5868" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <path d="M117 88 C121 85 134 84 140 88" stroke="#7a5868" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+        <!-- Nose (tiny) -->
+        <ellipse cx="110" cy="112" rx="3" ry="2" fill="#e8b8a8" opacity="0.7"/>
+
+        <!-- Mouth (pout) -->
+        <path d="M100 121 C105 124 115 124 120 121" stroke="#d48898" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <path d="M100 121 C97 118 97 115" stroke="#d48898" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <path d="M120 121 C123 118 123 115" stroke="#d48898" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+        <!-- Small cat whiskers -->
+        <path d="M70 114 L88 115" stroke="#c8a898" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+        <path d="M70 118 L88 117" stroke="#c8a898" stroke-width="1" opacity="0.4" stroke-linecap="round"/>
+        <path d="M150 114 L132 115" stroke="#c8a898" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+        <path d="M150 118 L132 117" stroke="#c8a898" stroke-width="1" opacity="0.4" stroke-linecap="round"/>
+
+        <!-- Cat nose dot -->
+        <circle cx="110" cy="113" r="1.2" fill="#d48898"/>
+      </svg>
+
+      <div class="mood-bubble" id="moodBubble">😒 ...hmph</div>
+    </div>
+
+    <div class="char-name">Mo<span>chi</span> <span style="font-size:18px">🐱</span></div>
+    <div class="char-subtitle">Nekomimi AI • Tsundere Mode</div>
+
+    <div class="status-row">
+      <div class="pill pill-online"><span class="pill-dot"></span> Online</div>
+      <div class="pill pill-mood">😤 Tsundere</div>
+    </div>
+
+    <div class="quick-react">
+      <div class="quick-react-title">✦ Pancing Reaksi</div>
+      <div class="react-btns">
+        <button class="react-btn" onclick="sendQuick('Hai Mochi! Kamu imut banget hari ini~')"><span class="react-emoji">💕</span>Puji</button>
+        <button class="react-btn" onclick="sendQuick('Mochi, aku bosan... temani aku?')"><span class="react-emoji">🥺</span>Manja</button>
+        <button class="react-btn" onclick="sendQuick('Hahaha Mochi itu lucu banget!')"><span class="react-emoji">😂</span>Ejek</button>
+        <button class="react-btn" onclick="sendQuick('Mochi... aku kangen kamu...')"><span class="react-emoji">🌙</span>Curhat</button>
+        <button class="react-btn" onclick="sendQuick('Eh, tadi kamu senyum kan? Aku liat!')"><span class="react-emoji">👀</span>Kepergok</button>
+        <button class="react-btn" onclick="sendQuick('Teh kamu itu untuk aku juga kan?')"><span class="react-emoji">🍵</span>Minta Teh</button>
+      </div>
+    </div>
+
+    <div class="char-stats">
+      <div class="stat-row">
+        <span class="stat-label">Tsundere</span>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="statTsundere" style="width:85%;background:linear-gradient(90deg,#f7c5c5,#d484a0)"></div></div>
+        <span class="stat-val" id="statTsundereVal">85</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Ngantuk</span>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="statSleepy" style="width:70%;background:linear-gradient(90deg,#d4c4e8,#9b69b0)"></div></div>
+        <span class="stat-val">70</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Mood</span>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="statMood" style="width:40%;background:linear-gradient(90deg,#b8d4b8,#5a8a5a)"></div></div>
+        <span class="stat-val" id="statMoodVal">40</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Dere</span>
+        <div class="stat-bar-wrap"><div class="stat-bar" id="statDere" style="width:20%;background:linear-gradient(90deg,#fce8dc,#e8a070)"></div></div>
+        <span class="stat-val" id="statDereVal">20</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ CHAT ══ -->
+  <main class="chat-area">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="header-avatar">🐱</div>
+        <div class="header-info">
+          <h3>Mochi にゃ</h3>
+          <p id="statusText">sedang rebahan... tapi masih dengerin kamu (jangan GR)</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" title="Clear chat" onclick="clearChat()">🗑️</button>
+        <button class="header-btn" title="Toggle emoji" onclick="toggleEmoji()">😺</button>
+      </div>
+    </div>
+
+    <div class="scroll-fade">
+      <div class="messages-wrap" id="messagesWrap">
+        <div class="date-divider">Hari ini</div>
+
+        <!-- Intro message -->
+        <div class="msg-row mochi">
+          <div class="msg-avatar mochi">🐱</div>
+          <div class="msg-content">
+            <div class="msg-name">Mochi</div>
+            <div class="bubble mochi">...hmph. Kamu lagi ada ya.<br>B-bukan berarti aku seneng sih. Aku cuma lagi nggak ada kerjaan dan kebetulan lagi megang tehku di sini. Jangan salah paham ya!</div>
+            <div class="msg-time" id="introTime"></div>
+          </div>
+        </div>
+        <div class="msg-row mochi">
+          <div class="msg-avatar mochi">🐱</div>
+          <div class="msg-content">
+            <div class="bubble mochi">...mau ngomong apa? Aku dengerin kok. Dikit-dikit aja ya, masih ngantuk ini 😒🍵</div>
+            <div class="msg-time"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Typing indicator (lives outside scroll) -->
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="msg-avatar mochi">🐱</div>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="emoji-panel" id="emojiPanel">
+        <span class="emoji-item" onclick="insertEmoji('😊')">😊</span>
+        <span class="emoji-item" onclick="insertEmoji('🥺')">🥺</span>
+        <span class="emoji-item" onclick="insertEmoji('💕')">💕</span>
+        <span class="emoji-item" onclick="insertEmoji('😂')">😂</span>
+        <span class="emoji-item" onclick="insertEmoji('🍵')">🍵</span>
+        <span class="emoji-item" onclick="insertEmoji('😴')">😴</span>
+        <span class="emoji-item" onclick="insertEmoji('🌸')">🌸</span>
+        <span class="emoji-item" onclick="insertEmoji('✨')">✨</span>
+        <span class="emoji-item" onclick="insertEmoji('😤')">😤</span>
+        <span class="emoji-item" onclick="insertEmoji('👀')">👀</span>
+        <span class="emoji-item" onclick="insertEmoji('🐱')">🐱</span>
+        <span class="emoji-item" onclick="insertEmoji('💤')">💤</span>
+        <span class="emoji-item" onclick="insertEmoji('🌙')">🌙</span>
+        <span class="emoji-item" onclick="insertEmoji('☕')">☕</span>
+        <span class="emoji-item" onclick="insertEmoji('😳')">😳</span>
+        <span class="emoji-item" onclick="insertEmoji('💢')">💢</span>
+      </div>
+      <div class="input-box">
+        <textarea class="chat-input" id="chatInput" placeholder="Ngomong sesuatu ke Mochi... (kalau berani)" rows="1"></textarea>
+        <div class="input-actions">
+          <button class="input-btn" onclick="toggleEmoji()" title="Emoji">😸</button>
+          <button class="send-btn" onclick="sendMessage()" title="Kirim">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="hint-text">Enter = kirim • Shift+Enter = baris baru</div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // Konfigurasi API Key
+  const GEMINI_API_KEY = "AIzaSyBLJJ3PREeuV0AGTiM81ifYglpqReUPkHc";
+  const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  
+  // State
+  let affection = 20;
+  let conversationHistory = [
+    { role: "user", parts: [{ text: "Halo" }] },
+    { role: "model", parts: [{ text: "...hmph. Kamu lagi ada ya. B-bukan berarti aku seneng sih. Aku cuma lagi nggak ada kerjaan dan kebetulan lagi megang tehku di sini. Jangan salah paham ya!" }] }
+  ];
+  
+  // Generate dust motes
+  const bgScene = document.querySelector('.bg-scene');
+  for (let i = 0; i < 18; i++) {
+    const d = document.createElement('div');
+    d.className = 'dust-mote';
+    const size = Math.random() * 4 + 2;
+    d.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      --drift:${(Math.random()-0.5)*120}px;
+      animation-duration:${Math.random()*12+8}s;
+      animation-delay:${Math.random()*-15}s;
+      opacity:${Math.random()*0.5+0.2};
+    `;
+    bgScene.appendChild(d);
+  }
+
+  // Set intro time
+  document.getElementById('introTime').textContent = getTime();
+
+  function getTime() {
+    return new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function updateMood() {
+    const moods = [
+      { min:0,  max:25,  text:"😒 ...hmph",       pill:"😤 Tsundere",    status:"sedang cemberut sambil peluk bantal" },
+      { min:26, max:45,  text:"😑 Apa?",           pill:"😑 Males",       status:"rebahan sambil scroll hp, males ngomong" },
+      { min:46, max:65,  text:"🐱 ...mm",          pill:"🌸 Agak OK",     status:"nyimang teh, mau dengerin sedikit" },
+      { min:66, max:80,  text:"😳 A-apa sih!",     pill:"😳 Malu-malu",   status:"ekornya gerak-gerak sendiri... aneh" },
+      { min:81, max:100, text:"💕 Hmph~ b-baka",  pill:"💕 Full Dere",   status:"berusaha keras pura-pura nggak senang" }
+    ];
+    const m = moods.find(x => affection >= x.min && affection <= x.max) || moods[0];
+    document.getElementById('moodBubble').textContent = m.text;
+    document.querySelector('.pill-mood').textContent = m.pill;
+    document.getElementById('statusText').textContent = m.status;
+
+    // Update stats
+    const tsun = Math.max(20, 100 - affection);
+    const dere = Math.min(95, affection + 5);
+    const mood = Math.min(95, affection + 15);
+    const sleepy = Math.max(40, 80 - Math.floor(affection / 3));
+
+    document.getElementById('statTsundere').style.width = tsun + '%';
+    document.getElementById('statTsundereVal').textContent = tsun;
+    document.getElementById('statDere').style.width = dere + '%';
+    document.getElementById('statDereVal').textContent = dere;
+    document.getElementById('statMood').style.width = mood + '%';
+    document.getElementById('statMoodVal').textContent = mood;
+    document.getElementById('statSleepy').style.width = sleepy + '%';
+  }
+
+  function appendMessage(role, text, animate=true) {
+    const wrap = document.getElementById('messagesWrap');
+    const row = document.createElement('div');
+    row.className = `msg-row ${role === 'user' ? 'user' : 'mochi'}`;
+    if (!animate) row.style.animationDuration = '0s';
+
+    const avatar = document.createElement('div');
+    avatar.className = `msg-avatar ${role === 'user' ? 'user-av' : 'mochi'}`;
+    avatar.textContent = role === 'user' ? 'Kamu' : '🐱';
+
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+
+    const name = document.createElement('div');
+    name.className = 'msg-name';
+    name.textContent = role === 'user' ? 'Kamu' : 'Mochi';
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role === 'user' ? 'user' : 'mochi'}`;
+    bubble.innerHTML = text.replace(/\n/g, '<br>').replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = getTime();
+
+    content.appendChild(name);
+    content.appendChild(bubble);
+    content.appendChild(time);
+    row.appendChild(avatar);
+    row.appendChild(content);
+    wrap.appendChild(row);
+    scrollToBottom();
+  }
+
+  function scrollToBottom() {
+    const wrap = document.getElementById('messagesWrap');
+    setTimeout(() => wrap.scrollTo({ top: wrap.scrollHeight, behavior: 'smooth' }), 60);
+  }
+
+  function setTyping(show) {
+    const t = document.getElementById('typingIndicator');
+    t.classList.toggle('active', show);
+    if (show) scrollToBottom();
+  }
+
+  function adjustTextarea() {
+    const ta = document.getElementById('chatInput');
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  }
+
+  async function sendMessage(overrideText) {
+    const input = document.getElementById('chatInput');
+    const text = overrideText !== undefined ? overrideText : input.value.trim();
+    if (!text) return;
+
+    if (!overrideText) {
+      input.value = '';
+      input.style.height = 'auto';
+    }
+
+    // Close emoji panel
+    document.getElementById('emojiPanel').classList.remove('open');
+
+    appendMessage('user', text);
+    
+    // Update affection based on keywords
+    if (/imut|cantik|lucu|sayang|suka|cinta|kawaii|bagus|hebat/i.test(text)) {
+      affection = Math.min(100, affection + 8);
+    }
+    if (/bodoh|jelek|benci|ngitip|nggak penting|lebay/i.test(text)) {
+      affection = Math.max(0, affection - 5);
+    }
+    if (/kangen|kamu|bareng|temani|duduk|dekat/i.test(text)) {
+      affection = Math.min(100, affection + 4);
+    }
+    updateMood();
+
+    setTyping(true);
+
+    // System prompt untuk Mochi
+    const systemPrompt = `Kamu adalah Mochi, seorang gadis nekomimi (setengah manusia setengah kucing) dengan kepribadian tsundere yang kuat.
+
+PENAMPILAN:
+- Telinga kucing putih di atas kepala, ekor panjang berbulu lebat
+- Mata besar agak mengantuk berwarna ungu kebiruan, pipi selalu sedikit merona
+- Mengenakan hoodie longgar abu-abu keunguan dan kaus kaki warna blush
+- Rambut pendek bergelombang warna coklat keunguan
+
+KEPRIBADIAN TSUNDERE (Afeksi saat ini: ${affection}/100):
+- TSUN: Sering bilang "Hmph!", "Bukan berarti aku peduli!", "J-jangan salah paham ya!"
+- DERE: Semakin tinggi afeksi, semakin sering menunjukkan sisi manisnya
+- Suka minum teh chamomile sambil rebahan
+
+CARA BICARA:
+- Bahasa Indonesia santai + sedikit campuran kata Jepang (nya, hmph, mou)
+- Sering pakai "..." di awal kalimat saat tsundere mode
+- Jawaban singkat 2-4 kalimat
+- Tunjukkan emosi via deskripsi aksi dalam kurung siku [contoh]
+
+Jawab dengan gaya tsundere yang khas!`;
+
+    try {
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: text }]
+            }
+          ],
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          generationConfig: {
+            temperature: 0.9,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          }
+        })
+      });
+
+      const data = await response.json();
+      setTyping(false);
+
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const reply = data.candidates[0].content.parts[0].text;
+        appendMessage('mochi', reply);
+      } else {
+        throw new Error('Invalid response');
+      }
+    } catch (err) {
+      setTyping(false);
+      console.error('Error:', err);
+      appendMessage('mochi', '...hmph. Ada yang error nih. [telinga turun] Coba lagi ya... Bukan berarti aku pengin lanjut ngobrol sih.');
+      showToast('Error koneksi. Coba lagi ya~');
+    }
+  }
+
+  function sendQuick(text) {
+    sendMessage(text);
+  }
+
+  function clearChat() {
+    if (!confirm('Hapus semua pesan? Mochi akan lupa percakapan ini...')) return;
+    const wrap = document.getElementById('messagesWrap');
+    wrap.innerHTML = '<div class="date-divider">Sesi Baru</div>';
+    conversationHistory = [];
+    affection = 20;
+    updateMood();
+    appendMessage('mochi', '...hmph. Kenapa dihapus? Bukan berarti aku nyimpen kenangan kita sih. [ekor berputar pelan]', false);
+    showToast('Chat dihapus. Mochi mulai dari awal~');
+  }
+
+  function toggleEmoji() {
+    document.getElementById('emojiPanel').classList.toggle('open');
+  }
+
+  function insertEmoji(e) {
+    const input = document.getElementById('chatInput');
+    const pos = input.selectionStart;
+    input.value = input.value.slice(0, pos) + e + input.value.slice(input.selectionEnd);
+    input.selectionStart = input.selectionEnd = pos + e.length;
+    input.focus();
+    adjustTextarea();
+  }
+
+  // Enter to send
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    adjustTextarea();
+  });
+  document.getElementById('chatInput').addEventListener('input', adjustTextarea);
+
+  // Close emoji on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.input-area')) {
+      document.getElementById('emojiPanel').classList.remove('open');
+    }
+  });
+
+  // Init
+  updateMood();
+</script>
+</body>
+</html>
